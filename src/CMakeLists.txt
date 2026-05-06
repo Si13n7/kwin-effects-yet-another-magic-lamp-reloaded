@@ -13,15 +13,13 @@ kconfig_add_kcfg_files(effect_SRCS
 add_library(kwin4_effect_yetanothermagiclamp SHARED ${effect_SRCS})
 
 target_link_libraries(kwin4_effect_yetanothermagiclamp
-    Qt5::Core
-    Qt5::Gui
-    KF5::ConfigCore
-    KF5::ConfigGui
-    KF5::CoreAddons
-    KF5::WindowSystem
-    kwineffects::kwineffects
-    kwineffects::kwinglutils
-    epoxy::epoxy
+    Qt6::Core
+    Qt6::Gui
+    KF6::ConfigCore
+    KF6::ConfigGui
+    KF6::CoreAddons
+    KF6::WindowSystem
+    KWin::kwin
 )
 
 install(
@@ -29,5 +27,5 @@ install(
         kwin4_effect_yetanothermagiclamp
 
     DESTINATION
-        ${PLUGIN_INSTALL_DIR}/kwin/effects/plugins/
+        ${KDE_INSTALL_QTPLUGINDIR}/kwin/effects/plugins/
 )

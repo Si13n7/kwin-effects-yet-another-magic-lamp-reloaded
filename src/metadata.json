@@ -12,10 +12,7 @@
         "Icon": "preferences-system-windows-effect-yetanothermagiclamp",
         "Id": "kwin4_effect_yetanothermagiclamp",
         "License": "GPL",
-        "Name": "Yet Another Magic Lamp",
-        "ServiceTypes": [
-            "KWin/Effect"
-        ]
+        "Name": "Yet Another Magic Lamp"
     },
     "org.kde.kwin.effect": {
         "exclusiveGroup": "minimize"

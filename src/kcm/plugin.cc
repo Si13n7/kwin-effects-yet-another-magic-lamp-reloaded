@@ -18,11 +18,9 @@
 // Own
 #include "YetAnotherMagicLampEffectKCM.h"
 
-// KF5
+// KF6
 #include <KPluginFactory>
 
-K_PLUGIN_FACTORY_WITH_JSON(YetAnotherMagicLampEffectKCMFactory,
-                           "metadata.json",
-                           registerPlugin<YetAnotherMagicLampEffectKCM>();)
+K_PLUGIN_CLASS_WITH_JSON(YetAnotherMagicLampEffectKCM, "metadata.json")
 
 #include "plugin.moc"

@@ -22,13 +22,12 @@
 #include "YetAnotherMagicLampConfig.h"
 #include "kwineffects_interface.h"
 
-YetAnotherMagicLampEffectKCM::YetAnotherMagicLampEffectKCM(QWidget* parent, const QVariantList& args)
-    : KCModule(parent, args)
+YetAnotherMagicLampEffectKCM::YetAnotherMagicLampEffectKCM(QObject* parent, const KPluginMetaData& data)
+    : KCModule(parent, data)
     , m_ui(new Ui::YetAnotherMagicLampEffectKCM)
 {
-    m_ui->setupUi(this);
-    addConfig(YetAnotherMagicLampConfig::self(), this);
-    load();
+    m_ui->setupUi(widget());
+    addConfig(YetAnotherMagicLampConfig::self(), widget());
 }
 
 YetAnotherMagicLampEffectKCM::~YetAnotherMagicLampEffectKCM()

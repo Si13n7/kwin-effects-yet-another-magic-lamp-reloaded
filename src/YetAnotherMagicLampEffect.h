@@ -22,7 +22,7 @@
 #include "common.h"
 
 // kwineffects
-#include <kwinoffscreeneffect.h>
+#include <effect/offscreeneffect.h>
 
 struct AnimationData {
     Model model;
@@ -41,7 +41,9 @@ public:
     void prePaintScreen(KWin::ScreenPrePaintData& data, std::chrono::milliseconds presentTime) override;
     void postPaintScreen() override;
 
-    void paintWindow(KWin::EffectWindow* w, int mask, QRegion region, KWin::WindowPaintData& data) override;
+    void paintWindow(const KWin::RenderTarget& renderTarget, const KWin::RenderViewport& viewport,
+                     KWin::EffectWindow* w, int mask, const KWin::Region& region,
+                     KWin::WindowPaintData& data) override;
 
     bool isActive() const override;
     int requestedEffectChainPosition() const override;
@@ -52,12 +54,15 @@ protected:
     void apply(KWin::EffectWindow* window, int mask, KWin::WindowPaintData& data, KWin::WindowQuadList& quads) override;
 
 private Q_SLOTS:
-    void slotWindowMinimized(KWin::EffectWindow* w);
-    void slotWindowUnminimized(KWin::EffectWindow* w);
+    void slotWindowAdded(KWin::EffectWindow* w);
+    void slotMinimizedChanged(KWin::EffectWindow* w);
     void slotWindowDeleted(KWin::EffectWindow* w);
     void slotActiveFullScreenEffectChanged();
 
 private:
+    void startMinimize(KWin::EffectWindow* w);
+    void startUnminimize(KWin::EffectWindow* w);
+
     Model::Parameters m_modelParameters;
     int m_gridResolution;
 

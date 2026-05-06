@@ -21,7 +21,10 @@
 #include "common.h"
 
 // kwineffects
-#include <kwineffects.h>
+#include <effect/effecthandler.h>
+#include <effect/effectwindow.h>
+#include <effect/timeline.h>
+#include <scene/itemgeometry.h>
 
 /**
  * Model for the magic lamp animation.
@@ -79,9 +82,9 @@ public:
      * Applies the current state of the model to the given list of
      * window quads.
      *
-     * @param quadds The list of window quads to be transformed.
+     * @param quads The list of window quads to be transformed.
      **/
-    void apply(QVector<KWin::WindowQuad>& quads) const;
+    void apply(KWin::WindowQuadList& quads) const;
 
     /**
      * Returns the parameters of the model.
@@ -122,10 +125,10 @@ public:
     QRegion clipRegion() const;
 
 private:
-    void applyBump(QVector<KWin::WindowQuad>& quads) const;
-    void applyStretch1(QVector<KWin::WindowQuad>& quads) const;
-    void applyStretch2(QVector<KWin::WindowQuad>& quads) const;
-    void applySquash(QVector<KWin::WindowQuad>& quads) const;
+    void applyBump(KWin::WindowQuadList& quads) const;
+    void applyStretch1(KWin::WindowQuadList& quads) const;
+    void applyStretch2(KWin::WindowQuadList& quads) const;
+    void applySquash(KWin::WindowQuadList& quads) const;
 
     void updateMinimizeStage();
     void updateUnminimizeStage();

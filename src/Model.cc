@@ -30,7 +30,7 @@ Model::Model(KWin::EffectWindow* window)
 
 static KWin::EffectWindow* findDock(const KWin::EffectWindow* client)
 {
-    const KWin::EffectWindowList windows = KWin::effects->stackingOrder();
+    const QList<KWin::EffectWindow*> windows = KWin::effects->stackingOrder();
 
     for (KWin::EffectWindow* window : windows) {
         if (!window->isDock())
@@ -72,8 +72,8 @@ static Direction realizeDirection(const KWin::EffectWindow* window)
         // Perhaps the dock is hidden, deduce direction to the icon.
         const QRectF iconRect = window->iconGeometry();
 
-        const KWin::EffectScreen* screen = KWin::effects->screenAt(iconRect.center().toPoint());
-        const int desktop = KWin::effects->currentDesktop();
+        KWin::LogicalOutput* screen = KWin::effects->screenAt(iconRect.center().toPoint());
+        KWin::VirtualDesktop* desktop = KWin::effects->currentDesktop();
 
         const QRectF screenRect = KWin::effects->clientArea(KWin::ScreenArea, screen, desktop);
         const QRectF constrainedRect = screenRect.intersected(iconRect);
@@ -296,12 +296,8 @@ static inline qreal interpolate(qreal from, qreal to, qreal t)
 static void transformQuadsLeft(
     const KWin::EffectWindow* window,
     const TransformParameters& params,
-    QVector<KWin::WindowQuad>& quads)
+    KWin::WindowQuadList& quads)
 {
-    // FIXME: Have a generic function that transforms window quads. Perhaps,
-    // a better approach is to have a transform method that operates on each
-    // individual vertex, e.g. void Model::transform(WindowVertex& vertex).
-
     const QRectF iconRect = window->iconGeometry();
     const QRectF windowRect = window->frameGeometry();
 
@@ -339,12 +335,8 @@ static void transformQuadsLeft(
 static void transformQuadsTop(
     const KWin::EffectWindow* window,
     const TransformParameters& params,
-    QVector<KWin::WindowQuad>& quads)
+    KWin::WindowQuadList& quads)
 {
-    // FIXME: Have a generic function that transforms window quads. Perhaps,
-    // a better approach is to have a transform method that operates on each
-    // individual vertex, e.g. void Model::transform(WindowVertex& vertex).
-
     const QRectF iconRect = window->iconGeometry();
     const QRectF windowRect = window->frameGeometry();
 
@@ -382,12 +374,8 @@ static void transformQuadsTop(
 static void transformQuadsRight(
     const KWin::EffectWindow* window,
     const TransformParameters& params,
-    QVector<KWin::WindowQuad>& quads)
+    KWin::WindowQuadList& quads)
 {
-    // FIXME: Have a generic function that transforms window quads. Perhaps,
-    // a better approach is to have a transform method that operates on each
-    // individual vertex, e.g. void Model::transform(WindowVertex& vertex).
-
     const QRectF iconRect = window->iconGeometry();
     const QRectF windowRect = window->frameGeometry();
 
@@ -425,12 +413,8 @@ static void transformQuadsRight(
 static void transformQuadsBottom(
     const KWin::EffectWindow* window,
     const TransformParameters& params,
-    QVector<KWin::WindowQuad>& quads)
+    KWin::WindowQuadList& quads)
 {
-    // FIXME: Have a generic function that transforms window quads. Perhaps,
-    // a better approach is to have a transform method that operates on each
-    // individual vertex, e.g. void Model::transform(WindowVertex& vertex).
-
     const QRectF iconRect = window->iconGeometry();
     const QRectF windowRect = window->frameGeometry();
 
@@ -468,7 +452,7 @@ static void transformQuadsBottom(
 static void transformQuads(
     const KWin::EffectWindow* window,
     const TransformParameters& params,
-    QVector<KWin::WindowQuad>& quads)
+    KWin::WindowQuadList& quads)
 {
     switch (params.direction) {
     case Direction::Left:
@@ -492,7 +476,7 @@ static void transformQuads(
     }
 }
 
-void Model::apply(QVector<KWin::WindowQuad>& quads) const
+void Model::apply(KWin::WindowQuadList& quads) const
 {
     switch (m_stage) {
     case AnimationStage::Bump:
@@ -513,7 +497,7 @@ void Model::apply(QVector<KWin::WindowQuad>& quads) const
     }
 }
 
-void Model::applyBump(QVector<KWin::WindowQuad>& quads) const
+void Model::applyBump(KWin::WindowQuadList& quads) const
 {
     TransformParameters params;
     params.shapeCurve = m_parameters.shapeCurve;
@@ -525,7 +509,7 @@ void Model::applyBump(QVector<KWin::WindowQuad>& quads) const
     transformQuads(m_window, params, quads);
 }
 
-void Model::applyStretch1(QVector<KWin::WindowQuad>& quads) const
+void Model::applyStretch1(KWin::WindowQuadList& quads) const
 {
     TransformParameters params;
     params.shapeCurve = m_parameters.shapeCurve;
@@ -537,7 +521,7 @@ void Model::applyStretch1(QVector<KWin::WindowQuad>& quads) const
     transformQuads(m_window, params, quads);
 }
 
-void Model::applyStretch2(QVector<KWin::WindowQuad>& quads) const
+void Model::applyStretch2(KWin::WindowQuadList& quads) const
 {
     TransformParameters params;
     params.shapeCurve = m_parameters.shapeCurve;
@@ -549,7 +533,7 @@ void Model::applyStretch2(QVector<KWin::WindowQuad>& quads) const
     transformQuads(m_window, params, quads);
 }
 
-void Model::applySquash(QVector<KWin::WindowQuad>& quads) const
+void Model::applySquash(KWin::WindowQuadList& quads) const
 {
     TransformParameters params;
     params.shapeCurve = m_parameters.shapeCurve;
