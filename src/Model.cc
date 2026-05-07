@@ -28,107 +28,25 @@ Model::Model(KWin::EffectWindow* window)
 {
 }
 
-static KWin::EffectWindow* findDock(const KWin::EffectWindow* client)
-{
-    const QList<KWin::EffectWindow*> windows = KWin::effects->stackingOrder();
-
-    for (KWin::EffectWindow* window : windows) {
-        if (!window->isDock())
-            continue;
-
-        if (!window->frameGeometry().intersects(client->iconGeometry()))
-            continue;
-
-        return window;
-    }
-
-    return nullptr;
-}
-
 static Direction realizeDirection(const KWin::EffectWindow* window)
 {
-    const KWin::EffectWindow* dock = findDock(window);
+    const QRectF iconRect = window->iconGeometry();
 
-    Direction direction;
-    QPointF screenDelta;
+    // Determine which screen the icon (taskbar button) lives on, then check
+    // which edge of that screen the icon touches. This avoids the unreliable
+    // cross-screen correction that broke multi-monitor setups in KWin 6.
+    KWin::LogicalOutput* screen = KWin::effects->screenAt(iconRect.center().toPoint());
+    KWin::VirtualDesktop* desktop = KWin::effects->currentDesktop();
+    const QRectF screenRect = KWin::effects->clientArea(KWin::ScreenArea, screen, desktop);
+    const QRectF constrainedRect = screenRect.intersected(iconRect);
 
-    if (dock) {
-        const QRectF screenRect = KWin::effects->clientArea(KWin::ScreenArea, dock);
-
-        if (dock->width() >= dock->height()) {
-            if (qFuzzyIsNull(dock->y() - screenRect.y()))
-                direction = Direction::Top;
-            else
-                direction = Direction::Bottom;
-        } else {
-            if (qFuzzyIsNull(dock->x() - screenRect.x()))
-                direction = Direction::Left;
-            else
-                direction = Direction::Right;
-        }
-
-        screenDelta += screenRect.center();
-    } else {
-        // Perhaps the dock is hidden, deduce direction to the icon.
-        const QRectF iconRect = window->iconGeometry();
-
-        KWin::LogicalOutput* screen = KWin::effects->screenAt(iconRect.center().toPoint());
-        KWin::VirtualDesktop* desktop = KWin::effects->currentDesktop();
-
-        const QRectF screenRect = KWin::effects->clientArea(KWin::ScreenArea, screen, desktop);
-        const QRectF constrainedRect = screenRect.intersected(iconRect);
-
-        if (qFuzzyIsNull(constrainedRect.left() - screenRect.left()))
-            direction = Direction::Left;
-        else if (qFuzzyIsNull(constrainedRect.top() - screenRect.top()))
-            direction = Direction::Top;
-        else if (qFuzzyIsNull(constrainedRect.right() - screenRect.right()))
-            direction = Direction::Right;
-        else
-            direction = Direction::Bottom;
-
-        screenDelta += screenRect.center();
-    }
-
-    const QRectF screenRect = KWin::effects->clientArea(KWin::ScreenArea, window);
-    screenDelta -= screenRect.center();
-
-    // Dock and window are on the same screen, no further adjustments are required.
-    if (screenDelta.isNull())
-        return direction;
-
-    const int safetyMargin = 100;
-
-    switch (direction) {
-    case Direction::Top:
-    case Direction::Bottom:
-        // Approach the icon along horizontal direction.
-        if (qAbs(screenDelta.x()) - qAbs(screenDelta.y()) > safetyMargin)
-            return direction;
-
-        // Approach the icon from bottom.
-        if (screenDelta.y() < 0)
-            return Direction::Top;
-
-        // Approach the icon from top.
-        return Direction::Bottom;
-
-    case Direction::Left:
-    case Direction::Right:
-        // Approach the icon along vertical direction.
-        if (qAbs(screenDelta.y()) - qAbs(screenDelta.x()) > safetyMargin)
-            return direction;
-
-        // Approach the icon from right side.
-        if (screenDelta.x() < 0)
-            return Direction::Left;
-
-        // Approach the icon from left side.
+    if (qFuzzyIsNull(constrainedRect.left() - screenRect.left()))
+        return Direction::Left;
+    if (qFuzzyIsNull(constrainedRect.top() - screenRect.top()))
+        return Direction::Top;
+    if (qFuzzyIsNull(constrainedRect.right() - screenRect.right()))
         return Direction::Right;
-
-    default:
-        Q_UNREACHABLE();
-    }
+    return Direction::Bottom;
 }
 
 void Model::start(AnimationKind kind)
