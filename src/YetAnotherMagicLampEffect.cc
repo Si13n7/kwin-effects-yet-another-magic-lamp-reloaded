@@ -25,6 +25,9 @@
 // kwineffects
 #include <core/renderviewport.h>
 
+// Qt
+#include <QTimer>
+
 // std
 #include <cmath>
 
@@ -223,6 +226,21 @@ void YetAnotherMagicLampEffect::startMinimize(KWin::EffectWindow* w)
 
     const QRectF iconRect = w->iconGeometry();
     if (!iconRect.isValid()) {
+        // On Wayland secondary screens the Plasma taskbar sets iconGeometry
+        // asynchronously (after QML layout). Keep the window visible and retry
+        // once the geometry arrives.
+        if (m_pendingMinimize.contains(w)) {
+            return;
+        }
+        m_pendingMinimize[w] = KWin::EffectWindowVisibleRef(w, KWin::EffectWindow::PAINT_DISABLED_BY_MINIMIZE);
+        QPointer<KWin::EffectWindow> weakRef(w);
+        QTimer::singleShot(150, this, [this, weakRef]() {
+            KWin::EffectWindow* win = weakRef.data();
+            m_pendingMinimize.remove(win);
+            if (win && win->isMinimized()) {
+                startMinimize(win);
+            }
+        });
         return;
     }
 
@@ -260,12 +278,14 @@ void YetAnotherMagicLampEffect::startUnminimize(KWin::EffectWindow* w)
 
 void YetAnotherMagicLampEffect::slotWindowDeleted(KWin::EffectWindow* w)
 {
+    m_pendingMinimize.remove(w);
     m_animations.remove(w);
 }
 
 void YetAnotherMagicLampEffect::slotActiveFullScreenEffectChanged()
 {
     if (KWin::effects->activeFullScreenEffect() != nullptr) {
+        m_pendingMinimize.clear();
         for (auto it = m_animations.constBegin(); it != m_animations.constEnd(); ++it) {
             unredirect(it.key());
         }

@@ -24,6 +24,9 @@
 // kwineffects
 #include <effect/offscreeneffect.h>
 
+// Qt
+#include <QPointer>
+
 struct AnimationData {
     Model model;
     KWin::EffectWindowVisibleRef visibleRef;
@@ -67,6 +70,8 @@ private:
     int m_gridResolution;
 
     QMap<KWin::EffectWindow*, AnimationData> m_animations;
+    // Windows waiting for iconGeometry to become valid before animation starts
+    QMap<KWin::EffectWindow*, KWin::EffectWindowVisibleRef> m_pendingMinimize;
 };
 
 inline int YetAnotherMagicLampEffect::requestedEffectChainPosition() const
