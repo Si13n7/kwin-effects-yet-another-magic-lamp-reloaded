@@ -37,8 +37,7 @@ On Arch Linux
 
 ```sh
 sudo pacman -S cmake extra-cmake-modules kwin qt6-base \
-    kcmutils kf6-kconfig kf6-kconfigwidgets kf6-coreaddons \
-    kf6-kwindowsystem libdrm
+    kcmutils kconfig kconfigwidgets kcoreaddons kwindowsystem libdrm
 ```
 
 On Fedora
