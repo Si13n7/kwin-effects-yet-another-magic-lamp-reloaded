@@ -1,0 +1,31 @@
+name: Build (openSUSE Tumbleweed)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed
+
+    steps:
+      - name: Update system
+        run: zypper --non-interactive refresh && zypper --non-interactive update
+
+      - name: Install dependencies
+        run: zypper --non-interactive install
+          gcc-c++ cmake kf6-extra-cmake-modules kwin6-devel kf6-kconfig-devel
+          kf6-kconfigwidgets-devel kf6-kcoreaddons-devel kf6-kcmutils-devel
+          kf6-kwindowsystem-devel qt6-base-devel libdrm-devel libepoxy-devel
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+
+      - name: Build
+        run: cmake --build build --parallel
